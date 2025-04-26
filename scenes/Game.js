@@ -104,10 +104,27 @@ export default class Game extends Phaser.Scene {
       null,
       this
     );
+
+    this.restartKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+
+    this.gameOverText = this.add.text(400, 300, 'Game Over', { fontSize: '64px', fill: '#ff0000' });
+    this.gameOverText.setOrigin(0.5);
+    this.gameOverText.setVisible(false);
+
+    this.timeLeft = 30;
+this.timerText = this.add.text(600, 20, 'Time: 30', { fontSize: '32px', fill: '#ffffff' });
+
+this.timer = this.time.addEvent({
+    delay: 1000, // 1 segundo
+    callback: this.updateTimer,
+    callbackScope: this,
+    loop: true
+});
   }
 
   update() {
     // update game objects
+    if (!this.gameOver) {
     if (this.cursors.left.isDown) {
       this.player.setVelocityX(-160);
 
@@ -124,6 +141,10 @@ export default class Game extends Phaser.Scene {
 
     if (this.cursors.up.isDown && this.player.body.touching.down) {
       this.player.setVelocityY(-330);
+    }
+  }
+  if (Phaser.Input.Keyboard.JustDown(this.restartKey)) {
+      this.scene.restart();
     }
   }
 
@@ -160,5 +181,23 @@ export default class Game extends Phaser.Scene {
     this.player.anims.play("turn");
 
     this.gameOver = true;
+
+    this.gameOverText.setVisible(true);
   }
+
+  updateTimer() {
+    if (this.gameOver) return;
+    
+    this.timeLeft--;
+    this.timerText.setText('Time: ' + this.timeLeft);
+
+    if (this.timeLeft <= 0) {
+        this.physics.pause();
+        this.player.setTint(0xff0000);
+        this.player.anims.play('turn');
+        this.gameOver = true;
+        this.gameOverText.setVisible(true);
+    }
 }
+}
+
